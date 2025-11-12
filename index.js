@@ -1,11 +1,32 @@
 const TelegramBot = require('node-telegram-bot-api');
 const mongoose = require('mongoose');
+
+// Загружаем .env только в разработке
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+  console.log('🔧 Режим разработки: загружены переменные из .env');
+} else {
+  console.log('🚀 Продакшен режим: используются переменные окружения хостинга');
+}
+
 const connectDB = require('./config/database');
 const Question = require('./models/Question');
 const UserSession = require('./models/UserSession');
 const { getClientInfo, formatLogMessage } = require('./utils/ipUtils');
 const Notifier = require('./utils/notifier');
-require('dotenv').config();
+
+// Проверяем обязательные переменные
+const requiredEnvVars = ['BOT_TOKEN', 'MONGODB_URI'];
+const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+
+if (missingVars.length > 0) {
+  console.error('❌ Отсутствуют обязательные переменные окружения:', missingVars.join(', '));
+  console.log('💡 На хостинге добавьте их в Environment Variables');
+  console.log('💡 Локально создайте .env файл');
+  process.exit(1);
+}
+
+// Остальной код бота без изменений...
 
 // Подключение к базе данных
 connectDB();
